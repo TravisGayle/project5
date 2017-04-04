@@ -20,14 +20,14 @@ int diskRead=0;
 int diskWrite=0;
 int counter=0;
 int *arr;
-struct disk *disk;
 int option;
+struct disk *disk;
 
 int LinearSearch(int begin, int end, int key)
 {
     int i;
-    foend(i=begin;i<=r;i++){
-    if(arr[i]==key)
+    for(i=begin; i<=end; i++){
+    if(arr[i] == key)
         return i;
     }
     return -1;
@@ -148,9 +148,13 @@ int main( int argc, char *argv[] )
     else
         option=3;
 	const char *program = argv[4];
-	const char *program = argv[4];
 
-	struct disk *disk = disk_open("myvirtualdisk",npages);
+	arr = (int *)malloc(nframes * sizeof(int));
+	int i;
+	for(i = 0; i < nframes; i++)
+		arr[i] = -1;
+
+	disk = disk_open("myvirtualdisk",npages);
 	if(!disk) {
 		fprintf(stderr,"couldn't create virtual disk: %s\n",strerror(errno));
 		return 1;
