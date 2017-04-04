@@ -15,18 +15,18 @@ how to use the page table and disk interfaces.
 #include <string.h>
 #include <errno.h>
 
+struct disk *disk;
 int pageFault=0;
-int diskRead=0;
 int diskWrite=0;
+int diskRead=0;
 int counter=0;
 int *arr;
 int option;
-struct disk *disk;
 
 int LinearSearch(int begin, int end, int key)
 {
     int i;
-    for(i = begin; i <= end; i++){
+    for(i = begin; i <= end; i++) {
     if(arr[i] == key)
         return i;
     }
@@ -39,59 +39,55 @@ void page_fault_handler( struct page_table *pt, int page )
     int no_frames=page_table_get_nframes(pt);
     char *physmem = page_table_get_physmem(pt);
 
-    if(no_frames >= no_pages){
+    if(no_frames >= no_pages) {
 	    printf("page fault on page #%d\n",page);
 	    page_table_set_entry(pt, page, page, PROT_READ|PROT_WRITE);
 	    pageFault++;
-	    diskRead = 0;
 	    diskWrite = 0;
+	    diskRead = 0;
     }
 
-    else{
+    else {
         //Implementation of Custom Code.
         /*This custom code is a hash function implementation of my own.*/
-        if(option == 3){
+        if(option == 3) {
             pageFault++;
             int temp = page % no_frames;
-            if(arr[temp] == page){
-            page_table_set_entry(pt, page, temp, PROT_READ|PROT_WRITE);
-            pageFault--;
-            }
-            else if(arr[temp] == -1){
-            page_table_set_entry(pt, page, temp, PROT_READ);
-            disk_read(disk, page, &physmem[temp * PAGE_SIZE]);
-            diskRead++;
-            }
-            else{
-            disk_write(disk, arr[temp], &physmem[temp * PAGE_SIZE]);
-            disk_read(disk, page, &physmem[temp * PAGE_SIZE]);
-            diskRead++;
-            diskWrite++;
-            page_table_set_entry(pt, page, temp, PROT_READ);
+            if(arr[temp] == page) {
+	            page_table_set_entry(pt, page, temp, PROT_READ|PROT_WRITE);
+	            pageFault--;
+            } else if(arr[temp] == -1) {
+	            page_table_set_entry(pt, page, temp, PROT_READ);
+	            disk_read(disk, page, &physmem[temp * PAGE_SIZE]);
+	            diskRead++;
+            } else {
+	            disk_write(disk, arr[temp], &physmem[temp * PAGE_SIZE]);
+	            disk_read(disk, page, &physmem[temp * PAGE_SIZE]);
+	            diskWrite++;
+	            diskRead++;
+	            page_table_set_entry(pt, page, temp, PROT_READ);
             }
             arr[temp] = page;
             page_table_print(pt);
         }
 
         //Implementation of FIFO.
-        else if(option == 2){
+        else if(option == 2) {
             pageFault++;
             int k = LinearSearch(0, no_frames - 1, page);
-            if(k > -1){
+            if(k > -1) {
 	            page_table_set_entry(pt, page, k, PROT_READ|PROT_WRITE);
 	            counter--;
 	            pageFault--;
-            }
-            else if(arr[counter] == -1){
+            } else if(arr[counter] == -1) {
 	            page_table_set_entry(pt, page, counter, PROT_READ);
 	            disk_read(disk, page, &physmem[counter * PAGE_SIZE]);
 	            diskRead++;
-            }
-            else{
+            } else {
 	            disk_write(disk, arr[counter], &physmem[counter * PAGE_SIZE]);
 	            disk_read(disk, page, &physmem[counter * PAGE_SIZE]);
-	            diskRead++;
 	            diskWrite++;
+	            diskRead++;
 	            page_table_set_entry(pt, page, counter, PROT_READ);
             }
             arr[counter] = page;
@@ -100,16 +96,16 @@ void page_fault_handler( struct page_table *pt, int page )
         }
 
         //Implementation of RAND.
-        else{
+        else {
             pageFault++;
             int k = LinearSearch(0, no_frames-1, page);
             int temp = lrand48() % no_frames;
-            if(k > -1){
+            if(k > -1) {
                 page_table_set_entry(pt,page,k,PROT_READ|PROT_WRITE);
                 pageFault--;
             }
-            else if(counter < no_frames){
-                while(arr[temp]!=-1){
+            else if(counter < no_frames) {
+                while(arr[temp]!=-1) {
                     temp=lrand48()%no_frames;
                     pageFault++;
                 }
@@ -118,12 +114,11 @@ void page_fault_handler( struct page_table *pt, int page )
                 diskRead++;
                 arr[temp]=page;
                 counter++;
-            }
-            else{
+            } else {
                 disk_write(disk, arr[temp], &physmem[temp * PAGE_SIZE]);
                 disk_read(disk, page, &physmem[temp * PAGE_SIZE]);
-                diskRead++;
                 diskWrite++;
+                diskRead++;
                 page_table_set_entry(pt, page, temp, PROT_READ);
                 arr[temp]=page;
             }
