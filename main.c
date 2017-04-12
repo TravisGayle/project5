@@ -194,7 +194,7 @@ int main( int argc, char *argv[] )
 		return 1;
 	}
 
-	printf("%d, %d, %d\n", numFaults, numReads, numWrites);
+	printf("%s, %s, %d, %d, %d, %d, %d\n", argv[3], program, npages, nframes, numFaults, numReads, numWrites);
 
 	page_table_delete(pt);
 	disk_close(disk);
